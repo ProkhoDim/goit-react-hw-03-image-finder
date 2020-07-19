@@ -4,13 +4,22 @@ import ImageGallery from './component/ImageGallery';
 import apiService from './services/apiServices';
 import LoadButton from './component/LoadButton';
 import Loader from 'react-loader-spinner';
+import Modal from './component/Modal';
+import ImageInModal from './component/ImageInModal';
+
+const INIT_STATE = {
+  queryPage: 1,
+  imageList: [],
+};
 
 class App extends Component {
   state = {
+    ...INIT_STATE,
     searchMessage: '',
-    queryPage: 1,
-    imageList: [],
     isLoading: false,
+    showModal: false,
+    modalImageOptions: {},
+    errorMessage: '',
   };
 
   componentDidUpdate(prevProps, prevState) {
@@ -28,18 +37,27 @@ class App extends Component {
         page: queryPage,
       })
       .then(data => {
-        this.setState(prevState => {
-          return {
-            imageList: [...prevState.imageList, ...data],
-            queryPage: prevState.queryPage + 1,
-          };
-        });
+        data.length > 0
+          ? this.setState(prevState => {
+              return {
+                imageList: [...prevState.imageList, ...data],
+                queryPage: prevState.queryPage + 1,
+              };
+            })
+          : this.setState({
+              errorMessage: `Nothing's found. Change query and try again. Query: ${searchMessage}`,
+              ...INIT_STATE,
+              isLoading: false,
+            });
+      })
+      .catch(err => {
+        console.log(err);
       })
       .finally(() => this.setState({ isLoading: false }));
   };
 
   handleSearchSubmit = message => {
-    this.setState({ searchMessage: message });
+    this.setState({ searchMessage: message, ...INIT_STATE });
   };
 
   handleLoadMoreClick = e => {
@@ -51,16 +69,48 @@ class App extends Component {
     });
   };
 
+  getLargeImage = imageId => {
+    this.setState(prevState => ({
+      modalImageOptions: {
+        ...prevState.imageList.find(({ id }) => id === imageId),
+      },
+    }));
+    this.toggleModal();
+  };
+
+  toggleModal = () => {
+    this.setState(({ showModal }) => ({ showModal: !showModal }));
+  };
+
   render() {
-    const { imageList, isLoading } = this.state;
+    const {
+      imageList,
+      isLoading,
+      showModal,
+      errorMessage,
+      modalImageOptions,
+    } = this.state;
 
     return (
       <div className="App">
+        {showModal && (
+          <Modal onClose={this.toggleModal}>
+            <ImageInModal options={modalImageOptions} />
+          </Modal>
+        )}
+
         <Searchbar onSubmit={this.handleSearchSubmit} />
-        <ImageGallery imageList={imageList} />
+
+        <ImageGallery imageList={imageList} onImageClick={this.getLargeImage} />
+
+        {!isLoading && errorMessage && (
+          <h2>Nothing's found. Change query and try again</h2>
+        )}
+
         {imageList.length > 0 && !isLoading && (
           <LoadButton onCLick={this.handleLoadMoreClick} />
         )}
+
         {isLoading && (
           <Loader
             type="Circles"
