@@ -19,11 +19,12 @@ class Modal extends Component {
     }
   };
 
-  onClickOverlay = ({ target }) => {
-    if (target.className === 'Overlay') {
+  onClickOverlay = ({ target: { className } }) => {
+    if (className === 'Overlay') {
       this.props.onClose();
     }
   };
+
   render() {
     return createPortal(
       <div className="Overlay" onClick={this.onClickOverlay}>

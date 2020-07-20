@@ -29,7 +29,7 @@ class App extends Component {
   getImages = () => {
     const { searchMessage, queryPage } = this.state;
 
-    this.setState({ isLoading: true });
+    this.setState({ isLoading: true, errorMessage: '' });
 
     return apiService
       .fetchImages({
@@ -46,7 +46,6 @@ class App extends Component {
             })
           : this.setState({
               errorMessage: `Nothing's found. Change query and try again. Query: ${searchMessage}`,
-              ...INIT_STATE,
               isLoading: false,
             });
       })
@@ -60,7 +59,7 @@ class App extends Component {
     this.setState({ searchMessage: message, ...INIT_STATE });
   };
 
-  handleLoadMoreClick = e => {
+  handleLoadMoreClick = () => {
     this.getImages().then(() => {
       window.scrollBy({
         top: document.documentElement.scrollHeight,

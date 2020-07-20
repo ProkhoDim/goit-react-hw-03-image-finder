@@ -17,4 +17,5 @@ const fetchImages = ({ page = 1, perPage = 20, queryString = '' }) => {
       })),
     );
 };
+
 export default { fetchImages };

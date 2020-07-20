@@ -5,13 +5,13 @@ class Searchbar extends Component {
     message: '',
   };
 
-  handleChange = e => this.setState({ message: e.currentTarget.value });
+  handleChange = ({ currentTarget: { value } }) =>
+    this.setState({ message: value });
 
   handleSubmit = e => {
     e.preventDefault();
 
     this.props.onSubmit(this.state.message);
-    // this.setState({ message: '' });
   };
 
   render() {
